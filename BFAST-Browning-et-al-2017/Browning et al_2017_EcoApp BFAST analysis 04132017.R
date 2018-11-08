@@ -315,7 +315,7 @@ WEST.ndvi.m <- colMeans(WEST.ndvi.points)
 ########## paper has include a .csv file with the processed NDIV data for each NPP site on a github repository.
 
 #Load in JRN_NPP_NDVI.csv file from github
-JRN.NPP.NDVI <- read.csv("JRN_NPP_NDVI.csv")
+JRN.NPP.NDVI <- read.csv("BFAST-Browning-et-al-2017/JRN_NPP_NDVI.csv", stringsAsFactors = F)
 BASN.ndvi.m <- JRN.NPP.NDVI$BASN.ndvi.m
 CALI.ndvi.m <- JRN.NPP.NDVI$CALI.ndvi.m
 COLL.ndvi.m <- JRN.NPP.NDVI$COLL.ndvi.m
@@ -519,7 +519,7 @@ bfast_old <- function(Yt, h=0.15, season =c("dummy","harmonic","none"), max.iter
 ### BASN
 ############################################################################################
 ## apply on MODIS composite point
-ndvi.date <- (orgTime(ndvi,nDays=16,begin="2000049", end="2014177", pillow=0))$inputLayerDates  #, pillow=90  #original model run until end="2014177" but later cropped for figure
+ndvi.date <- (orgTime(JRN.NPP.NDVI$X,nDays=16,begin="2000049", end="2014177", pillow=0))$inputLayerDates  #, pillow=90  #original model run until end="2014177" but later cropped for figure
 basn.ndvi <- bfastts.na(as.numeric(BASN.ndvi.m)/10000, ndvi.date, type = c("16-day")) 
 dev.off()
 plot(basn.ndvi)
