@@ -272,23 +272,23 @@ seasonal <- function (x, out, npp, precip, sim = NULL, labels = c(colnames(X), "
 ### Plotting NPP data by plant functional tyep ###############
 ############################################################################################################################################
 
-jrn_func <- read.csv("G:/ARS_Static_Data/Jornada/JORNADA_NPP/biomass_funcgrp_site_2000_2012.csv", header=T, sep=',')
+jrn_func <- read.csv("JornadaStudy_011_npp_quad_biomass.csv", header=T, sep=',')
 
-BASN.jrn_func <- jrn_func[jrn_func$SITE %in% c("BASN"), ]
-CALI.jrn_func  <- jrn_func[jrn_func$SITE %in% c("CALI"), ]
-COLL.jrn_func  <- jrn_func[jrn_func$SITE %in% c("COLL"), ]
-EAST.jrn_func  <- jrn_func[jrn_func$SITE %in% c("EAST"), ]
-GRAV.jrn_func  <- jrn_func[jrn_func$SITE %in% c("GRAV"), ]
-IBPE.jrn_func  <- jrn_func[jrn_func$SITE %in% c("IBPE"), ]
-NORT.jrn_func  <- jrn_func[jrn_func$SITE %in% c("NORT"), ]
-RABB.jrn_func  <- jrn_func[jrn_func$SITE %in% c("RABB"), ]
-SAND.jrn_func  <- jrn_func[jrn_func$SITE %in% c("SAND"), ]
-SMAL.jrn_func  <- jrn_func[jrn_func$SITE %in% c("SMAL"), ]
-SUMM.jrn_func  <- jrn_func[jrn_func$SITE %in% c("SUMM"), ]
-TAYL.jrn_func  <- jrn_func[jrn_func$SITE %in% c("TAYL"), ]
-TOBO.jrn_func  <- jrn_func[jrn_func$SITE %in% c("TOBO"), ]
-WELL.jrn_func  <- jrn_func[jrn_func$SITE %in% c("WELL"), ]
-WEST.jrn_func  <- jrn_func[jrn_func$SITE %in% c("WEST"), ]
+BASN.jrn_func <- jrn_func[jrn_func$site %in% c("BASN"), ]
+CALI.jrn_func  <- jrn_func[jrn_func$site %in% c("CALI"), ]
+COLL.jrn_func  <- jrn_func[jrn_func$site %in% c("COLL"), ]
+EAST.jrn_func  <- jrn_func[jrn_func$site %in% c("EAST"), ]
+GRAV.jrn_func  <- jrn_func[jrn_func$site %in% c("GRAV"), ]
+IBPE.jrn_func  <- jrn_func[jrn_func$site %in% c("IBPE"), ]
+NORT.jrn_func  <- jrn_func[jrn_func$site %in% c("NORT"), ]
+RABB.jrn_func  <- jrn_func[jrn_func$site %in% c("RABB"), ]
+SAND.jrn_func  <- jrn_func[jrn_func$site %in% c("SAND"), ]
+SMAL.jrn_func  <- jrn_func[jrn_func$site %in% c("SMAL"), ]
+SUMM.jrn_func  <- jrn_func[jrn_func$site %in% c("SUMM"), ]
+TAYL.jrn_func  <- jrn_func[jrn_func$site %in% c("TAYL"), ]
+TOBO.jrn_func  <- jrn_func[jrn_func$site %in% c("TOBO"), ]
+WELL.jrn_func  <- jrn_func[jrn_func$site %in% c("WELL"), ]
+WEST.jrn_func  <- jrn_func[jrn_func$site %in% c("WEST"), ]
 
 
 ######################################################################################################################################
@@ -298,7 +298,7 @@ WEST.jrn_func  <- jrn_func[jrn_func$SITE %in% c("WEST"), ]
 #This code was used to create the NPP functional plots for the other 14 sites
 
 #BASN Absolute Contribution
-BASN.jrn_func$median_date <- as.Date(as.character(BASN.jrn_func$median_date))
+BASN.jrn_func$median_date <- as.Date(as.character(BASN.jrn_func$date),format='%m/%d/%Y')
 
 ylim <- c(0, max(BASN.jrn_func$bio_annual + BASN.jrn_func$bio_pforb +  BASN.jrn_func$bio_pgrass +  BASN.jrn_func$bio_shrub))
 xx <- c(BASN.jrn_func$median_date, rev(BASN.jrn_func$median_date))
