@@ -1,3 +1,7 @@
+library(MODIS)
+library(rgdal)
+library(doMPI)
+
 #set up parrallel backend
 cl <- startMPIcluster(count=24)
 registerDoMPI(cl)
@@ -12,12 +16,12 @@ MODISoptions(localArcPath="~/MODIS/MODIS_ARC/",
 
 # #Vegetation Indicies (250 M)
 #MODIS tile for USDA Jornada Experimental Range
-getHdf(product="MOD13Q1",begin="2015321", tileH=9,tileV=5, collection='005') 
+getHdf(product="MOD13Q1",begin="2002017", end="2003001", tileH=9,tileV=5, collection='006')
 
 
 ## Read in the Jornada boundary shapefile (specify source directory)
-JRN <- readOGR(dsn="~/JRN_boundary",layer="JRN_boundary")
-JRN.point <- readOGR(dsn="~/Jornada_1M_plot_centroid",layer="Jornada_1m_plot_centroid")
+JRN <- readOGR(dsn="Infrastructure2.gdb",layer="JER_Bdry_25Aug15")
+JRN.point <- readOGR(dsn="Infrastructure2.gdb",layer="NPP_Sites_study011_Centroid")
 
 
 
@@ -34,7 +38,7 @@ plot(JRN_raster)
 
 #find out which SDS numbers correspond to which bands by examining one downloaded image
 #MOD13Q1
-getSds(HdfName="MOD13Q1.A2000049.h08v04.005.2006269063040.hdf")
+getSds(HdfName="MOD13Q1.A2000065.h09v05.006.2015136022550.hdf")
 
 # $SDSnames
 # [1] "250m 16 days NDVI"                       [2] "250m 16 days EVI"                      
@@ -46,13 +50,13 @@ getSds(HdfName="MOD13Q1.A2000049.h08v04.005.2006269063040.hdf")
 
 #run MODIS function runGdal to extract MODIS Data
 #MOD13Q1
-runGdal(job="JRN_Modis_VI", product="MOD13Q1", collection='005', extent=JRN_raster, begin="2000001", SDSstring="111111")
+runGdal(job="JRN_Modis_VI", product="MOD13Q1", collection='006', extent=JRN_raster, begin="2000065", SDSstring="111111")
 
 #set the path to get the correct data on the source directory: 
 #path to 250M VI's
 path <- paste(options("MODIS_outDirPath"),"/JRN_Modis_VI",sep="") 
 ndvi <- preStack(path=path, pattern="*_NDVI.tif$")
-JRN_NDVI_brick<- brick(stack(ndvi),  filename='/output_directory/JRN_NDVI_brick', overwrite=TRUE)
+JRN_NDVI_brick<- brick(stack(ndvi),  filename='JRN_NDVI_brick', overwrite=TRUE)
 
 
 #Raster layers need to be in a vector list to parallelize accross a cluster.
@@ -65,6 +69,25 @@ stack2list <- function(stack){
 }
 
 JRN_NDVI_list<- stack2list(stack(ndvi))
+
+
+##########################################################################################################
+# I downloaded all the tifs from appEEARS, start here
+path = 'C:/Users/echriste/Documents/Projects/Active/bfast/MODIS_appeears/NDVI'
+ndvi <- preStack(path=path, pattern='*_NDVI_*')
+JRN_NDVI_brick <- brick(stack(ndvi), filename='JRN_NDVI_brick', overwrite=T)
+
+#Raster layers need to be in a vector list to parallelize accross a cluster.
+stack2list <- function(stack){
+  list<-vector("list", nlayers(stack))
+  for(i in 1:nlayers(stack)) {
+    list[[i]] <- stack[[i]]
+  }
+  return(list)
+}
+
+JRN_NDVI_list<- stack2list(stack(ndvi))
+
 ####################################################################################################################################
 
 ######################################################################################################
@@ -176,6 +199,7 @@ QC_Data$QA_word9[QC_Data$Bit15 == 1] <- "Yes"
 ##############################################################################################
 #Run QA on MODIS 250m NDVI
 #extract unique QA values from raster brick
+JRN_QA_list <- JRN_NDVI_list
 JRN_QA_unique<- foreach(i=1:length(JRN_QA_list), .combine='c', .packages = c("raster", "rgdal")) %dopar% {   
   unique(JRN_QA_list[[i]])
 }
@@ -203,7 +227,7 @@ JRN_QA <- JRN_QA_list
 
 #First loop assigns all good pixels a value of 1 based on previous selection
 for(i in 1:length(JRN_QA)){
-  
+  print(i)
   for(j in 1:length(QA.int)){
     JRN_QA[[i]][JRN_QA[[i]]==QA.int[j]] <-1
     
@@ -225,7 +249,7 @@ JRN_NDVI_mask<- foreach(i=1:length(JRN_NDVI_mask), .packages = c("raster", "rgda
 }
 
 #Final NDVI product
-JRN_NDVI_mask <- brick(stack(JRN_NDVI_mask),  filename='/output_directory/JRN_NDVI_mask', overwrite=TRUE)
+JRN_NDVI_mask <- brick(stack(JRN_NDVI_mask),  filename='JRN_NDVI_mask', overwrite=TRUE)
 
 #Test it to see results
 plot(JRN_NDVI_mask[[1]])
@@ -285,3 +309,28 @@ TAYL.ndvi.m <- colMeans(TAYL.ndvi.points)
 TOBO.ndvi.m <- colMeans(TOBO.ndvi.points)
 WELL.ndvi.m <- colMeans(WELL.ndvi.points)
 WEST.ndvi.m <- colMeans(WEST.ndvi.points)
+
+
+# Create one big data frame
+JRN_NDVI <- cbind(BASN.ndvi.m,
+                  CALI.ndvi.m,
+                  COLL.ndvi.m,
+                  EAST.ndvi.m,
+                  GRAV.ndvi.m,
+                  IBPE.ndvi.m,
+                  NORT.ndvi.m,
+                  RABB.ndvi.m,
+                  SAND.ndvi.m,
+                  SMAL.ndvi.m,
+                  SUMM.ndvi.m,
+                  TAYL.ndvi.m,
+                  TOBO.ndvi.m,
+                  WELL.ndvi.m,
+                  WEST.ndvi.m)
+JRN_NDVI <- data.frame(JRN_NDVI)
+
+dates = str_extract(rownames(JRN_NDVI),'[0-9]{7}')
+JRN_NDVI$date = dates
+
+
+write.csv(JRN_NDVI,'C:/Users/echriste/Documents/Projects/Active/bfast/JRN_NDVI_collection6.csv')
